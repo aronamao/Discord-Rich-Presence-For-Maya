@@ -6,6 +6,8 @@ Currently works in Maya 2016, 2018 and 2019, I don't have 2017 so I am unable to
 
 <img width="126" alt="Discord_MYJCCDwKbt" src="https://user-images.githubusercontent.com/50831997/59538496-44474380-8efa-11e9-8716-8fa73f144de2.png">
 
+Latest compiled release available [here](https://github.com/ArhasGH/Discord-Rich-Presence-For-Maya/releases/latest)
+
 ## Instructions
 
 Simply move the RichPresence.mll to your C:/Users/Name/Documents/maya/Version/plug-ins and enable it in your Plugin Manager.
