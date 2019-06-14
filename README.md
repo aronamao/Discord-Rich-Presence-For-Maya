@@ -16,3 +16,7 @@ A menu will be added to your menubar at the top called Rich Presence, in here yo
 If you run into issues you can disable the plug-in in the Plugin Manager, doing so will reset everything, but make sure to wait until your status has been updated on Discord before enabling the plug-in again otherwise your maya might crash.
 
 I would generally speaking save your files before changing anything, the plugin appears to be stable aside from disabling and enabling the whole plugin too quickly, but testing the long-term stability is not really possible for a single person so make sure to report any issues you run into.
+
+## Disclaimer
+
+So far I've only been able to test it with one other person using it at the same time, there is a possibility of stability issues. Please let me know if that is happening.
