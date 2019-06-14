@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iostream>
 #include <direct.h>
+#include <maya/MUserEventMessage.h>
 
 //protoype everything maya related
 class drp : public MPxCommand {

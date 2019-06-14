@@ -1,4 +1,6 @@
 #include "drpCmd.h"
+
+
 static MCallbackId projectChangeCallback;
 static MCallbackId newFileCallback;
 static MCallbackId openFileCallback;
@@ -13,9 +15,7 @@ drp::~drp()
 {
 	MMessage::removeCallback(projectChangeCallback);
 	MMessage::removeCallback(newFileCallback);
-	if (MGlobal::mayaVersion() == "2019") {
-		MMessage::removeCallback(openFileCallback);
-	}
+	MMessage::removeCallback(openFileCallback);
 }
 
 void * drp::creator()

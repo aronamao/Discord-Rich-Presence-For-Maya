@@ -11,6 +11,10 @@ Discord * g_Discord;
 MStringArray test;
 MString mayaVer = MGlobal::mayaVersion();
 
+MString projectName;
+MString workspace;
+
+
 void read(bool &value, bool &name, bool &project, bool &time) {
 
 	std::ifstream file("C:/ProgramData/DRPMaya/settings.json");
@@ -56,17 +60,14 @@ void write(const char* value = "true", const char* name = "true", const char* pr
 }
 
 //function for calling the Discord Update
-void update(int name,int project,int time) {
+void update() {
 	//Check if name and/or project are uninitialized and grab the values from the config if that's the case
-	if (name != 0 && name != 1 && project != 0 && project != 1){
-		bool value;
-		bool name;
-		bool project;
-		bool time;
-		read(value, name, project, time);
-	}
+	bool value;
+	bool name;
+	bool project;
+	bool time;
+	read(value, name, project, time);
 	// define the project name
-	MString workspace;
 	MStatus status = MGlobal::executeCommand(MString("workspace -q -active"), workspace);
 	// if the name is supposed to be displayed generate it
 	if (name == 1) {
@@ -94,6 +95,7 @@ void update(int name,int project,int time) {
 	}
 }
 
+
 // just calling the initialization
 void initialize() {
 	const char* ID = NULL;
@@ -103,6 +105,9 @@ void initialize() {
 	else if (mayaVer == "2019") {
 		ID = "585149869098926108";
 	}
+	else if (mayaVer == "2016") {
+		ID = "589191141132468345";
+	}
 	const char* version = mayaVer.asChar();
 	g_Discord->Initialize(ID);
 }
@@ -110,6 +115,14 @@ void initialize() {
 void shutDown() {
 	g_Discord->ShutDown();
 }
+
+void compareProject() {
+	MGlobal::executeCommand(MString("workspace -q -active"), projectName);
+	if (workspace != projectName) {
+		update();
+	}
+}
+
 
 MStatus initializePlugin(MObject obj)
 {
@@ -128,14 +141,11 @@ MStatus initializePlugin(MObject obj)
 	bool project;
 	bool time;
 
-	//add Callback for 95% of file scenarios to update Discord
-	MCallbackId projectChangeCallback = MEventMessage::addEventCallback("workspaceChanged",(MMessage::MBasicFunction)update,(&name,&project,&time));
-	//add Callback for when you make a new file to update Discord
-	MCallbackId newFileCallback = MSceneMessage::addCallback(MSceneMessage::kAfterNew, (MMessage::MBasicFunction)update, (&name, &project, &time));
-	
-	if (mayaVer == "2019") {
-		MCallbackId openFileCallback = MSceneMessage::addCallback(MSceneMessage::kAfterOpen, (MMessage::MBasicFunction)update, (&name, &project, &time));
-	}
+	//add workaround Callback for project Change by comparing the old project name to the new one
+	MCallbackId projectChangeCallback = MEventMessage::addEventCallback("workspaceChanged",(MMessage::MBasicFunction)compareProject);
+	//add Callback for when you make a new/open a file to update Discord
+	MCallbackId newFileCallback = MSceneMessage::addCallback(MSceneMessage::kAfterNew, (MMessage::MBasicFunction)update);
+	MCallbackId openFileCallback = MSceneMessage::addCallback(MSceneMessage::kAfterOpen, (MMessage::MBasicFunction)update);
 
 	//create the directory and the config and set default values if non-existant
 	if (CreateDirectory("C:/ProgramData/DRPMaya", NULL)) {
@@ -159,7 +169,7 @@ MStatus initializePlugin(MObject obj)
 	//add menu items with a checkbox in the right state and have it call the drpEnable command if toggled
 	if (value == 1) {
 		initialize();
-		update(name, project, time);
+		update();
 		MGlobal::executeCommand("menuItem -label Enable -cb 1 -c \"drpEnable\" Enable");
 	}
 
@@ -235,7 +245,6 @@ MStatus drp::doIt(const MArgList& argList)
 	//if the value is being set to on it should start it and set it to the current values and store the current values in the config
 	else {
 		initialize();
-		update(name,project,time);
 		
 		const char* f_value;
 		const char* f_name;
@@ -268,6 +277,8 @@ MStatus drp::doIt(const MArgList& argList)
 		}
 
 		write(f_value, f_name, f_project, f_time);
+		update();
+
 	}
 
 	return MS::kSuccess;
