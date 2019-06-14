@@ -1,6 +1,7 @@
 # Autodesk Maya Rich Presence
 
 This plugin will update your status on Discord depending on your scene and project.
+Currently works in Maya 2016,2018 and 2019, I don't have 2017 so I am unable to test it there.
 
 ## Instructions
 
