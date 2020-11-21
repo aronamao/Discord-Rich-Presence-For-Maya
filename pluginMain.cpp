@@ -108,6 +108,9 @@ void initialize() {
 	else if (mayaVer == "2016") {
 		ID = "589191141132468345";
 	}
+	else if (mayaVer == "2020") {
+		ID = "654424985363808286";
+	}
 	const char* version = mayaVer.asChar();
 	g_Discord->Initialize(ID);
 }
@@ -117,7 +120,7 @@ void shutDown() {
 }
 
 void compareProject() {
-	MGlobal::executeCommand(MString("workspace -q -active"), projectName);
+	MGlobal::executeCommand(MString("workspace -q -	active"), projectName);
 	if (workspace != projectName) {
 		update();
 	}
