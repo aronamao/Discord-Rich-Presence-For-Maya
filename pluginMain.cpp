@@ -6,6 +6,8 @@
 #include <sstream>
 #include <json.hpp>
 #include <algorithm>
+#include <stdio.h>
+#include <iomanip>
 
 
 Discord * g_Discord;
@@ -34,7 +36,7 @@ void write(bool value = true, bool name = true, bool project = true, bool time =
 			{"DisplayProjectName", project},
 			{"DisplayTime", time},
 	};
-	file << Settings;
+	file << std::setw(4) << Settings;
 	file.close();
 }
 
@@ -102,6 +104,9 @@ void compareProject() {
 	}
 }
 
+const char* createMenuItem(std::string first, bool value, std::string second) {
+	return (first + std::string(value ? "1" : "0") + second).c_str();
+}
 
 MStatus initializePlugin(MObject obj)
 {
@@ -135,29 +140,11 @@ MStatus initializePlugin(MObject obj)
 	if (Settings["PresenceEnabled"] == true) {
 		initialize();
 		update();
-		MGlobal::executeCommand("menuItem -label Enable -cb 1 -c \"drpEnable\" Enable");
 	}
-	else {
-		MGlobal::executeCommand("menuItem -label Enable -cb 0 -c \"drpEnable\" Enable");
-	}
-	if (Settings["DisplayFileName"] == true) {
-		MGlobal::executeCommand("menuItem -label \"Show file name\" -cb 1 -c \"drpEnable\"  Name");
-	}
-	else {
-		MGlobal::executeCommand("menuItem -label \"Show file name\" -cb 0 -c \"drpEnable\"  Name");
-	}
-	if (Settings["DisplayProjectName"] == true) {
-		MGlobal::executeCommand("menuItem -label \"Show project name\" -cb 1 -c \"drpEnable\" Project");
-	}
-	else {
-		MGlobal::executeCommand("menuItem -label \"Show project name\" -cb 0 -c \"drpEnable\" Project");
-	}
-	if (Settings["DisplayTime"] == true) {
-		MGlobal::executeCommand("menuItem -label \"Show time spent\" -cb 1 -c \"drpEnable\" Time");
-	}
-	else {
-		MGlobal::executeCommand("menuItem -label \"Show time spent\" -cb 0 -c \"drpEnable\" Time");
-	}
+	MGlobal::executeCommand(createMenuItem("menuItem -label Enable -cb ", Settings["PresenceEnabled"].get<bool>(), "-c \"drpEnable\" Enable"));
+	MGlobal::executeCommand(createMenuItem("menuItem -label \"Show file name\" -cb ", Settings["DisplayFileName"].get<bool>(), "-c \"drpEnable\" Name"));
+	MGlobal::executeCommand(createMenuItem("menuItem -label \"Show project name\" -cb ", Settings["DisplayProjectName"].get<bool>(), "-c \"drpEnable\" Project"));
+	MGlobal::executeCommand(createMenuItem("menuItem -label \"Show time spent\" -cb ", Settings["DisplayTime"].get<bool>(), "-c \"drpEnable\" Time"));
 	return MS::kSuccess;
 }
 MStatus uninitializePlugin(MObject obj)
@@ -203,6 +190,8 @@ MStatus drp::doIt(const MArgList& argList)
 	//if the value is being set to off it should shutdown DRP
 	if (value == 0) {
 		shutDown();
+		write(value, name, project, time);
+
 	}
 
 	//if the value is being set to on it should start it and set it to the current values and store the current values in the config
@@ -211,7 +200,6 @@ MStatus drp::doIt(const MArgList& argList)
 		
 		write(value, name, project, time);
 		update();
-
 	}
 
 	return MS::kSuccess;
