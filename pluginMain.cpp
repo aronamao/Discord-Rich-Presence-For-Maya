@@ -4,6 +4,7 @@
 #include "Discord.h"
 #include <stdlib.h>
 #include <sstream>
+#include <json.hpp>
 #include <algorithm>
 
 
@@ -14,63 +15,37 @@ MString mayaVer = MGlobal::mayaVersion();
 MString projectName;
 MString workspace;
 
+nlohmann::json Settings;
 
-void read(bool &value, bool &name, bool &project, bool &time) {
+std::string path = "C:/ProgramData/DRPMaya/settings.json";
 
-	std::ifstream file("C:/ProgramData/DRPMaya/settings.json");
-	if (file.is_open()) {
-		std::string line;
-		while (std::getline(file, line)) {
-			line.erase(std::remove_if(line.begin(), line.end(), isspace), line.end());
-			if (line[0] == '#' || line.empty()) {
-				continue;
-			}
-			auto delimiterPos = line.find("=");
-			auto setting = line.substr(0, delimiterPos);
 
-			if (setting == "\"PresenceEnabled\"") {
-				auto vl = line.substr(delimiterPos + 1);
-				std::istringstream(vl) >> std::boolalpha >> value;
-			}
-			else if (setting == "\"DisplayFileName\"") {
-				auto vl = line.substr(delimiterPos + 1);
-				std::istringstream(vl) >> std::boolalpha >> name;
-			}
-			else if (setting == "\"DisplayProjectName\"") {
-				auto vl = line.substr(delimiterPos + 1);
-				std::istringstream(vl) >> std::boolalpha >> project;
-			}
-			else if (setting == "\"DisplayTime\"") {
-				auto vl = line.substr(delimiterPos + 1);
-				std::istringstream(vl) >> std::boolalpha >> time;
-			}
-		}
-	}
+void read() {
+	std::ifstream file(path);
+	file >> Settings;
+	file.close();
 }
 
-
-void write(const char* value = "true", const char* name = "true", const char* project = "true", const char* time = "true") {
-	std::ofstream file;
-	file.open("C:/ProgramData/DRPMaya/settings.json");
-	file << "\"PresenceEnabled\" = " << value << std::endl;
-	file << "\"DisplayFileName\" = " << name << std::endl;
-	file << "\"DisplayProjectName\" = " << project << std::endl;
-	file << "\"DisplayTime\" = " << time << std::endl;
+void write(bool value = true, bool name = true, bool project = true, bool time = true) {
+	std::ofstream file(path);
+	Settings = {
+			{"PresenceEnabled", value},
+			{"DisplayFileName", name},
+			{"DisplayProjectName", project},
+			{"DisplayTime", time},
+	};
+	file << Settings;
 	file.close();
 }
 
 //function for calling the Discord Update
 void update() {
 	//Check if name and/or project are uninitialized and grab the values from the config if that's the case
-	bool value;
-	bool name;
-	bool project;
-	bool time;
-	read(value, name, project, time);
+	read();
 	// define the project name
 	MStatus status = MGlobal::executeCommand(MString("workspace -q -active"), workspace);
 	// if the name is supposed to be displayed generate it
-	if (name == 1) {
+	if (Settings["DisplayFileName"] == true) {
 		//grab the current file directory
 		MString fileName = MFileIO::currentFile();
 		char drive[_MAX_DRIVE];
@@ -87,11 +62,12 @@ void update() {
 		strcat_s(result, fname);
 		strcat_s(result, Ext);
 		//pass the name,project and whether or not they are to be displayed
-		g_Discord->Update(result, workspace.asChar(), name, project, time);
+		g_Discord->Update(result, workspace.asChar(), Settings["DisplayFileName"], Settings["DisplayProjectName"], Settings["DisplayTime"]);
 	}
 	// if the name is not supposed to be displayed just pass NULL
 	else {
-		g_Discord->Update(NULL, workspace.asChar(), name, project, time);
+
+		g_Discord->Update(NULL, workspace.asChar(), Settings["DisplayFileName"], Settings["DisplayProjectName"], Settings["DisplayTime"]);
 	}
 }
 
@@ -138,11 +114,6 @@ MStatus initializePlugin(MObject obj)
 	//add the menu at the top by using MEL Commands
 	MString menu;
 	MGlobal::executeCommand("menu -p MayaWindow -l \"Rich Presence\" RP",menu);
-	
-	bool value;
-	bool name;
-	bool project;
-	bool time;
 
 	//add workaround Callback for project Change by comparing the old project name to the new one
 	MCallbackId projectChangeCallback = MEventMessage::addEventCallback("workspaceChanged",(MMessage::MBasicFunction)compareProject);
@@ -152,47 +123,36 @@ MStatus initializePlugin(MObject obj)
 
 	//create the directory and the config and set default values if non-existant
 	if (CreateDirectory("C:/ProgramData/DRPMaya", NULL)) {
-		const char* t_value = "true";
-		const char* t_name = "true";
-		const char* t_project = "true";
-		const char* t_time = "true";
 		write();
-		value = 1;
-		name = 1;
-		project = 1;
-		time = 1;
-
 	}
 
 	//if the directory already exists grab the old settings
 	else if (ERROR_ALREADY_EXISTS == GetLastError()) {
-		read(value, name, project, time);
+		read();
 	}
-	
 	//add menu items with a checkbox in the right state and have it call the drpEnable command if toggled
-	if (value == 1) {
+
+	if (Settings["PresenceEnabled"] == true) {
 		initialize();
 		update();
 		MGlobal::executeCommand("menuItem -label Enable -cb 1 -c \"drpEnable\" Enable");
 	}
-
 	else {
 		MGlobal::executeCommand("menuItem -label Enable -cb 0 -c \"drpEnable\" Enable");
 	}
-
-	if (name == 1) {
+	if (Settings["DisplayFileName"] == true) {
 		MGlobal::executeCommand("menuItem -label \"Show file name\" -cb 1 -c \"drpEnable\"  Name");
 	}
 	else {
 		MGlobal::executeCommand("menuItem -label \"Show file name\" -cb 0 -c \"drpEnable\"  Name");
 	}
-	if (project == 1) {
+	if (Settings["DisplayProjectName"] == true) {
 		MGlobal::executeCommand("menuItem -label \"Show project name\" -cb 1 -c \"drpEnable\" Project");
 	}
 	else {
 		MGlobal::executeCommand("menuItem -label \"Show project name\" -cb 0 -c \"drpEnable\" Project");
 	}
-	if (time == 1) {
+	if (Settings["DisplayTime"] == true) {
 		MGlobal::executeCommand("menuItem -label \"Show time spent\" -cb 1 -c \"drpEnable\" Time");
 	}
 	else {
@@ -249,37 +209,7 @@ MStatus drp::doIt(const MArgList& argList)
 	else {
 		initialize();
 		
-		const char* f_value;
-		const char* f_name;
-		const char* f_project;
-		const char* f_time;
-
-		if (value == 1) {
-			f_value = "true";
-		}
-		else {
-			f_value = "false";
-		}
-		if (name == 1) {
-			f_name = "true";
-		}
-		else {
-			f_name = "false";
-		}
-		if (project == 1) {
-			f_project = "true";
-		}
-		else {
-			f_project = "false";
-		}
-		if (time == 1) {
-			f_time = "true";
-		}
-		else {
-			f_time = "false";
-		}
-
-		write(f_value, f_name, f_project, f_time);
+		write(value, name, project, time);
 		update();
 
 	}
