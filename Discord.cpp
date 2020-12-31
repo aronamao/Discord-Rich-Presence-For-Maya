@@ -9,29 +9,20 @@ void Discord::Initialize(const char* ID) {
 	Discord_Initialize(ID,&Handle, 1, NULL);
 }
 
-//update function needed to update DRP to the desired values, everything that is a const char* is just text and the ints decide whether or not the text is displayed in the first place
-void Discord::Update(const char* result,const char* workspace,int name,int project,int time) {
+//update function needed to update DRP to the desired values
+void Discord::Update(const char* result, const char* workspace, nlohmann::json Settings) {
 	DiscordRichPresence discordPresence;
 	memset(&discordPresence, 0, sizeof(discordPresence));
-	if (name == 1) {
-		discordPresence.details = result;
-	}
-	else {
-		discordPresence.details = NULL;
-	}
-	if (time == 1) {
-		//time defined in Discord.h
-		discordPresence.startTimestamp = eptime;
-	}
-	else {
-		discordPresence.startTimestamp = NULL;
-	}
-	if (project == 1) {
-		discordPresence.state = workspace;
-	}
-	else {
+	if (Settings["Secret"]) {
+		discordPresence.details = "Working on a secret";
 		discordPresence.state = NULL;
+
 	}
+	else {
+		discordPresence.details = (Settings["DisplayFileName"] ? result : NULL);
+		discordPresence.state = (Settings["DisplayProjectName"] ? workspace : NULL);
+	}
+	discordPresence.startTimestamp = (Settings["DisplayTime"] ? eptime : NULL);
 	//endTimestamp set to NULL to have the time go up indefinetly
 	discordPresence.endTimestamp = NULL;
 	discordPresence.largeImageKey = "lrgicon";

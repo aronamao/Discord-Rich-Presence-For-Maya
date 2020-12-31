@@ -2,12 +2,6 @@
 #include <maya/MFileIO.h>
 #include "drpCmd.h"
 #include "Discord.h"
-#include <stdlib.h>
-#include <sstream>
-#include <json.hpp>
-#include <algorithm>
-#include <stdio.h>
-#include <iomanip>
 
 
 Discord * g_Discord;
@@ -28,13 +22,14 @@ void read() {
 	file.close();
 }
 
-void write(bool value = true, bool name = true, bool project = true, bool time = true) {
+void write(bool value = true, bool name = true, bool project = true, bool time = true, bool secret = false) {
 	std::ofstream file(path);
 	Settings = {
 			{"PresenceEnabled", value},
 			{"DisplayFileName", name},
 			{"DisplayProjectName", project},
 			{"DisplayTime", time},
+			{"Secret", secret}
 	};
 	file << std::setw(4) << Settings;
 	file.close();
@@ -47,29 +42,19 @@ void update() {
 	// define the project name
 	MStatus status = MGlobal::executeCommand(MString("workspace -q -active"), workspace);
 	// if the name is supposed to be displayed generate it
-	if (Settings["DisplayFileName"] == true) {
+	if (Settings["DisplayFileName"]) {
 		//grab the current file directory
-		MString fileName = MFileIO::currentFile();
-		char drive[_MAX_DRIVE];
-		char dir[_MAX_DIR];
-		char fname[_MAX_FNAME];
-		char ext[_MAX_EXT];
-		// split it into parts
-		_splitpath_s(fileName.asChar(), drive, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, ext, _MAX_EXT);
-		// define the extension and add everything together
-		const char* Ext = ".ma";
-		const char* state = "Working on ";
-		char result[50];
-		strcpy_s(result, state);
-		strcat_s(result, fname);
-		strcat_s(result, Ext);
+		std::string fileName = MFileIO::currentFile().asChar();
+		std::size_t botDirPos = fileName.find_last_of("/") + 1;
+		std::string file = fileName.substr(botDirPos, fileName.length());
+		std::string result = "Working on " + file + ".ma";
 		//pass the name,project and whether or not they are to be displayed
-		g_Discord->Update(result, workspace.asChar(), Settings["DisplayFileName"], Settings["DisplayProjectName"], Settings["DisplayTime"]);
+		g_Discord->Update(result.c_str(), workspace.asChar(), Settings);
 	}
 	// if the name is not supposed to be displayed just pass NULL
 	else {
 
-		g_Discord->Update(NULL, workspace.asChar(), Settings["DisplayFileName"], Settings["DisplayProjectName"], Settings["DisplayTime"]);
+		g_Discord->Update(NULL, workspace.asChar(), Settings);
 	}
 }
 
@@ -105,7 +90,7 @@ void compareProject() {
 }
 
 const char* createMenuItem(std::string first, bool value, std::string second) {
-	return (first + std::string(value ? "1" : "0") + second).c_str();
+	return ("menuItem -label " + first + " -cb " + std::string(value ? "1" : "0") + "-c " + second).c_str();
 }
 
 MStatus initializePlugin(MObject obj)
@@ -141,10 +126,11 @@ MStatus initializePlugin(MObject obj)
 		initialize();
 		update();
 	}
-	MGlobal::executeCommand(createMenuItem("menuItem -label Enable -cb ", Settings["PresenceEnabled"].get<bool>(), "-c \"drpEnable\" Enable"));
-	MGlobal::executeCommand(createMenuItem("menuItem -label \"Show file name\" -cb ", Settings["DisplayFileName"].get<bool>(), "-c \"drpEnable\" Name"));
-	MGlobal::executeCommand(createMenuItem("menuItem -label \"Show project name\" -cb ", Settings["DisplayProjectName"].get<bool>(), "-c \"drpEnable\" Project"));
-	MGlobal::executeCommand(createMenuItem("menuItem -label \"Show time spent\" -cb ", Settings["DisplayTime"].get<bool>(), "-c \"drpEnable\" Time"));
+	MGlobal::executeCommand(createMenuItem("Enable", Settings["PresenceEnabled"].get<bool>(), "\"drpEnable\" Enable"));
+	MGlobal::executeCommand(createMenuItem("\"Show file name\"", Settings["DisplayFileName"].get<bool>(), "\"drpEnable\" Name"));
+	MGlobal::executeCommand(createMenuItem("\"Show project name\"", Settings["DisplayProjectName"].get<bool>(), "\"drpEnable\" Project"));
+	MGlobal::executeCommand(createMenuItem("\"Show time spent\"", Settings["DisplayTime"].get<bool>(), "\"drpEnable\" Time"));
+	MGlobal::executeCommand(createMenuItem("\"Secret Mode\"", Settings["Secret"].get<bool>(), "\"drpEnable\" Secret"));
 	return MS::kSuccess;
 }
 MStatus uninitializePlugin(MObject obj)
@@ -180,17 +166,19 @@ MStatus drp::doIt(const MArgList& argList)
 	int name;
 	int project;
 	int time;
+	int secret;
 
 	//query the current state of the checkboxes and store them in the according variable
 	MGlobal::executeCommand("menuItem -q -cb Enable", value);
 	MGlobal::executeCommand("menuItem -q -cb Name", name);
 	MGlobal::executeCommand("menuItem -q -cb Project", project);
 	MGlobal::executeCommand("menuItem -q -cb Time", time);
+	MGlobal::executeCommand("menuItem -q -cb Secret", secret);
 
 	//if the value is being set to off it should shutdown DRP
 	if (value == 0) {
 		shutDown();
-		write(value, name, project, time);
+		write(value, name, project, time, secret);
 
 	}
 
@@ -198,7 +186,7 @@ MStatus drp::doIt(const MArgList& argList)
 	else {
 		initialize();
 		
-		write(value, name, project, time);
+		write(value, name, project, time, secret);
 		update();
 	}
 
