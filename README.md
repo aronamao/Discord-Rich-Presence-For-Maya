@@ -2,7 +2,7 @@
 
 This plugin will update your status on Discord depending on your scene and project.
 
-Currently works in Maya 2016-2020. 2021 support will be added as soon as possible.
+Currently works in Maya 2016-2020, it is however only compiled for 2018-2020 as I don't have 2016/2017. If you want to use it in either one you will have to compile it yourself. 2021 support will be added as soon as possible.
 
 <img width="300" alt="Discord_MYJCCDwKbt" src="https://user-images.githubusercontent.com/50831997/59538496-44474380-8efa-11e9-8716-8fa73f144de2.png">
 

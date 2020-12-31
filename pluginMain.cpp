@@ -62,14 +62,17 @@ void update() {
 // just calling the initialization
 void initialize() {
 	const char* ID = NULL;
-	if (mayaVer == "2018") {
+	if (mayaVer == "2016") {
+		ID = "589191141132468345";
+	}
+	else if (mayaVer == "2017") {
+		ID = "794218711342383154";
+	}
+	else if (mayaVer == "2018") {
 		ID = "578912672628604948";
 	}
 	else if (mayaVer == "2019") {
 		ID = "585149869098926108";
-	}
-	else if (mayaVer == "2016") {
-		ID = "589191141132468345";
 	}
 	else if (mayaVer == "2020") {
 		ID = "654424985363808286";
