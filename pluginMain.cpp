@@ -47,7 +47,11 @@ void update() {
 		std::string fileName = MFileIO::currentFile().asChar();
 		std::size_t botDirPos = fileName.find_last_of("/") + 1;
 		std::string file = fileName.substr(botDirPos, fileName.length());
-		std::string result = "Working on " + file + ".ma";
+		std::string ext = ".ma";
+		if (file.find(".ma") != std::string::npos || file.find(".mb") != std::string::npos) {
+			ext = "";
+		}
+		std::string result = "Working on " + file + ext;
 		//pass the name,project and whether or not they are to be displayed
 		g_Discord->Update(result.c_str(), workspace.asChar(), Settings);
 	}
