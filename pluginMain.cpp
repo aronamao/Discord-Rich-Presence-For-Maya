@@ -81,6 +81,9 @@ void initialize() {
 	else if (mayaVer == "2020") {
 		ID = "654424985363808286";
 	}
+	else if (mayaVer == "2022") {
+		ID = "824375466566746193";
+	}
 	const char* version = mayaVer.asChar();
 	g_Discord->Initialize(ID);
 }
