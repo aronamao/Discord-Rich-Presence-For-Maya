@@ -4,7 +4,7 @@
 #include "Discord.h"
 
 
-Discord * g_Discord;
+Discord* g_Discord;
 MStringArray test;
 MString mayaVer = MGlobal::mayaVersion();
 
@@ -84,6 +84,9 @@ void initialize() {
 	else if (mayaVer == "2022") {
 		ID = "824375466566746193";
 	}
+	else if (mayaVer == "2023") {
+		ID = "960249266192912534";
+	}
 	const char* version = mayaVer.asChar();
 	g_Discord->Initialize(ID);
 }
@@ -108,15 +111,15 @@ MStatus initializePlugin(MObject obj)
 	MStatus status;
 	// add the command
 	MFnPlugin fnPlugin(obj, "Arhas", "1.0", "Any");
-	status = fnPlugin.registerCommand("drpEnable",drp::creator);
+	status = fnPlugin.registerCommand("drpEnable", drp::creator);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
 
 	//add the menu at the top by using MEL Commands
 	MString menu;
-	MGlobal::executeCommand("menu -p MayaWindow -l \"Rich Presence\" RP",menu);
+	MGlobal::executeCommand("menu -p MayaWindow -l \"Rich Presence\" RP", menu);
 
 	//add workaround Callback for project Change by comparing the old project name to the new one
-	MCallbackId projectChangeCallback = MEventMessage::addEventCallback("workspaceChanged",(MMessage::MBasicFunction)compareProject);
+	MCallbackId projectChangeCallback = MEventMessage::addEventCallback("workspaceChanged", (MMessage::MBasicFunction)compareProject);
 	//add Callback for when you make a new/open a file to update Discord
 	MCallbackId newFileCallback = MSceneMessage::addCallback(MSceneMessage::kAfterNew, (MMessage::MBasicFunction)update);
 	MCallbackId openFileCallback = MSceneMessage::addCallback(MSceneMessage::kAfterOpen, (MMessage::MBasicFunction)update);
@@ -158,7 +161,7 @@ MStatus uninitializePlugin(MObject obj)
 	MGlobal::executeCommand("deleteUI RP");
 
 	//close the file if currently open
-	std::ifstream file ("C:/ProgramData/DRPMaya/settings.json");
+	std::ifstream file("C:/ProgramData/DRPMaya/settings.json");
 	if (file.is_open()) {
 		file.close();
 	}
@@ -195,7 +198,7 @@ MStatus drp::doIt(const MArgList& argList)
 	//if the value is being set to on it should start it and set it to the current values and store the current values in the config
 	else {
 		initialize();
-		
+
 		write(value, name, project, time, secret);
 		update();
 	}
