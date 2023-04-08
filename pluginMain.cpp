@@ -1,5 +1,6 @@
 #include <maya/MFnPlugin.h>
 #include <maya/MFileIO.h>
+#include <map>
 #include "drpCmd.h"
 #include "Discord.h"
 
@@ -58,38 +59,26 @@ void update() {
 	// if the name is not supposed to be displayed just pass NULL
 	else {
 
-		g_Discord->Update(NULL, workspace.asChar(), Settings);
+		g_Discord->Update(nullptr, workspace.asChar(), Settings);
 	}
 }
 
 
 // just calling the initialization
 void initialize() {
-	const char* ID = NULL;
-	if (mayaVer == "2016") {
-		ID = "589191141132468345";
-	}
-	else if (mayaVer == "2017") {
-		ID = "794218711342383154";
-	}
-	else if (mayaVer == "2018") {
-		ID = "578912672628604948";
-	}
-	else if (mayaVer == "2019") {
-		ID = "585149869098926108";
-	}
-	else if (mayaVer == "2020") {
-		ID = "654424985363808286";
-	}
-	else if (mayaVer == "2022") {
-		ID = "824375466566746193";
-	}
-	else if (mayaVer == "2023") {
-		ID = "960249266192912534";
-	}
-	const char* version = mayaVer.asChar();
-	g_Discord->Initialize(ID);
+	std::map<int, const char*> ids = {
+		{ 2016, "589191141132468345"},
+		{ 2017, "794218711342383154"},
+		{ 2018, "578912672628604948"},
+		{ 2019, "585149869098926108"},
+		{ 2020, "654424985363808286"},
+		{ 2022, "824375466566746193"},
+		{ 2023, "960249266192912534"},
+		{ 2024, "1094282848300699748"},
+	};
+	g_Discord->Initialize(ids[mayaVer.asInt()]);
 }
+
 // just calling the Shutdown function
 void shutDown() {
 	g_Discord->ShutDown();
