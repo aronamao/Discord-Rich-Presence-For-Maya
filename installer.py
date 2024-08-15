@@ -2,7 +2,12 @@ import pathlib
 import shutil
 from maya import cmds
 from maya.api import OpenMaya as om
-from PySide2 import QtWidgets, QtGui
+
+try:
+    from PySide2 import QtWidgets, QtGui
+except ImportError:
+    from PySide6 import QtWidgets, QtGui
+
 
 GUI = None
 
@@ -66,6 +71,10 @@ class Installer(QtWidgets.QDialog):
             if cmds.pluginInfo("RichPresence", q=True, loaded=True):
                 cmds.unloadPlugin("RichPresence")
             plugin_path = version / "RichPresence.mll"
+            # make sure plugin path exists
+            test = maya_folder / version.name / "plug-ins"
+            print(test)
+            test.mkdir(parents=True, exist_ok=True)
             try:
                 shutil.copyfile(plugin_path, maya_folder / version.name / "plug-ins/RichPresence.mll")
             except PermissionError as e:
