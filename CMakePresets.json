@@ -1,0 +1,32 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 31,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "Build",
+      "hidden": false,
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/out",
+      "cacheVariables": {
+        "MAYA_VERSION": "2025",
+        "DEVKIT_LOCATION": "E:/maya_devkits"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "Release",
+      "configurePreset": "Build",
+      "configuration": "Release"
+    },
+    {
+      "name": "Debug",
+      "configurePreset": "Build",
+      "configuration": "Debug"
+    }
+  ]
+}

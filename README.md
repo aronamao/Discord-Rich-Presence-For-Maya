@@ -1,24 +1,56 @@
-# Autodesk Maya Rich Presence
+# Rich Presence for Autodesk Maya
 
-This plugin will update your status on Discord depending on your scene and project.
+![image](https://github.com/user-attachments/assets/97085773-4c72-4a26-97f2-c11133ac9e9c)
 
-Currently works in Maya 2016-2024, it is however only compiled for 2018-2024. If you want to use it in any previous versions you will need to compile it yourself.
+This plug-in will update your status on Discord depending on your scene and project.
 
-<img width="300" alt="Discord_MYJCCDwKbt" src="https://user-images.githubusercontent.com/50831997/59538496-44474380-8efa-11e9-8716-8fa73f144de2.png">
+Currently has been tested in Maya 2023-2026. Earlier versions could work, but compatibility is not guaranteed and compiled binaries won't be provided.
 
-Latest compiled release available [here](https://github.com/ArhasGH/Discord-Rich-Presence-For-Maya/releases/latest)
+### V2 Disclaimer
+With v2, the plug-in has been updated to make use of Discord's Social Sdk. While this should overall work better and support more features, there have been some minor regressions. Primarily the ability to hide the timestamp is completely gone.
+The Maya version is also not displayed anymore as every version requires a separate registered application, so this was simplified.
+
+Latest compiled release available [here](https://github.com/aronamao/Discord-Rich-Presence-For-Maya/releases/latest)
 
 ## Installation
 
-### Automatic Installation
+Simply download the release .zip and extract the contents to a location of your choice. From there open Maya and drag'n'drop the installer.py file into your Maya window. A new dialog should pop-up:
 
-Simply download the release .zip and extract the contents to a location of your choice. From there open Maya and drag'n'drop the installer.py file into your Maya window. From here just tell the installer what to do.
+![image](https://github.com/user-attachments/assets/01c7273b-a153-4cd4-845a-672020dcd3ab)
 
-### Manual Installation
+Simply hit install.
 
-Simply move the RichPresence.mll to your C:/Users/Name/Documents/maya/Version/plug-ins and enable it in your Plugin Manager. It is possible that your maya won't be using this plug-in path anymore depending on how you installed it. If you followed the documentation the path should be "C:\Program Files\Autodesk\Maya2020\bin\plug-ins". If that is not the case check your environment variables for MAYA_PLUG_IN_PATH and change accordingly.
+## Uninstalling
+Delete everything named DRPForMaya in your maya modules folder (<Documents>/maya/modules).
 
 ## Details
-A menu will be added to your menubar at the top called Rich Presence, in here you can change the settings according to your needs. Note that turning it off and on too many times in a row can lead to it crashing, if that happens, restart maya and everything should work as usual. Also keep in mind that enabling and disabling it can take a while, but that limitation is set by Discord, there's nothing I can do to change that. Your settings will be saved even if maya crashes and the same settings will apply across multiple Maya versions.
-If you run into issues you can disable the plug-in in the Plugin Manager, doing so will reset everything. Your Maya may or may not crash when re-enabling it again too quickly, tho I haven't run into this crash for quite a while even when deliberately testing. Aside from that the plugin appears to be stable, at least from my testing over the last 2 years.
+Once you enable the "DRPForMaya.mll" plug-in in the plug-in manager your discord status should immediately update.
+A new menu will be registered, which you can use to open the settings:
 
+![image](https://github.com/user-attachments/assets/5262e7f8-0a4f-4a92-ac5e-532d6ed54617)
+
+There's a few options that can be changed:
+
+![image](https://github.com/user-attachments/assets/05ef115d-f37d-4bb9-9598-64234a1e773c)
+
+If you want to hide your status you will just need to disable the plug-in.
+
+## Building
+
+The project is built with CMake 3.31+
+
+### Step-By-Step build
+As the target location I will use C:\RichPresence
+
+1. Get the maya devkit for and extract it to any location. Where exactly doesn't matter, but it should follow this pattern:
+   **path_of_your_choice/version/devkitBase**. So for example: **E:/maya_devkits/2025/devkitBase**
+   This is done for convenience, so it's easier to build different versions
+2. clone the repo to your target location via `git clone https://github.com/aronamao/Discord-Rich-Presence-For-Maya.git C:\RichPresence`
+3. `cd **C:\RichPresence**`
+4. `mkdir ./out`
+5. `cmake -B out -G "Visual Studio 17 2022"  -DMAYA_VERSION:STRING="2025" -DDEVKIT_LOCATION:STRING="E:/maya_devkits"` You have to provide a devkit location and maya_version.
+6. `cmake --build --preset=Release --target install`
+7. Repeat step 5 and 6 for all desired versions
+
+Once you run the install, all needed files should be moved into the module folder. Afterwards you can simply run the installer.py by drag-n-dropping it into Maya.
+I would usually recommend to build the Release version to avoid some debugging verbosity.
