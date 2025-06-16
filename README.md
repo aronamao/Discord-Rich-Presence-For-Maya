@@ -21,7 +21,7 @@ Simply download the release .zip and extract the contents to a location of your 
 Simply hit install.
 
 ## Uninstalling
-Delete everything named DRPForMaya in your maya modules folder (<Documents>/maya/modules).
+Delete everything named DRPForMaya in your maya modules folder (Documents/maya/modules).
 
 ## Details
 Once you enable the "DRPForMaya.mll" plug-in in the plug-in manager your discord status should immediately update.
