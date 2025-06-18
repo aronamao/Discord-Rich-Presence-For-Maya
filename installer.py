@@ -49,6 +49,9 @@ class Installer(QtWidgets.QDialog):
                 final_module += "\n"
             final_module += self.format_template(version)
 
+        if not self.maya_module_dir.exists():
+            self.maya_module_dir.mkdir(parents=True, exist_ok=True)
+
         with open(self.maya_module_dir / f"{module_name}.mod", 'w') as f:
             f.write(final_module)
 
